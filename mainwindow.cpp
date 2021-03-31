@@ -1,30 +1,30 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <iostream>
+
+void setFixedGeometry(QWidget* w, int ax, int ay, int aw, int ah){
+    w->setGeometry(ax, ay, aw, ah);
+    w->setMinimumSize(aw, ah);
+    w->setMaximumSize(aw, ah);
+}
+
 int calc_stages(int players){
-    if(players == 1)
-        return 1;
-
-    int k = 1, c=0;
-    while(k<=players && ++c){
-        if(k==players)
-            return c;
-        k *= 2;
-    }
-
     int stages = 1;
-    do{
+    int p = 1;
+    while(p<players){
         ++stages;
-    } while(players /= 2);
-
+        p *= 2;
+    }
     return stages;
 }
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow){
     ui->setupUi(this);
     this->setWindowTitle(QString("Tournament grid"));
+    createInput();
+}
 
-    this->setGeometry(10, 30, 210, 230);
+void MainWindow::createInput(){
+    setFixedGeometry(this, 10, 30, 210, 230);
     QTextEdit *edit = new QTextEdit(this);
     edit->setGeometry(5, 5, 200, 200);
     QPushButton *btn = new QPushButton(this);
@@ -50,16 +50,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 //    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14"));
 //    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15"));
 //    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16"));
+//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17"));
 //    btn->click();
 }
 
 void MainWindow::on_btn_click(QTextEdit* edit, QPushButton* btn){
     players = edit->toPlainText().split('\n');
-    if(players[0] == "" && players.size() == 1)
-        return;
     if(players.back() == "")
         players.pop_back();
     if(players.size() < 2)
+        return;
+    if(players.front() == "" && players.size() == 1)
         return;
     delete edit;
     delete btn;
@@ -70,17 +71,16 @@ void MainWindow::createGrid(){
     std::random_shuffle(players.begin(), players.end());
     const int count = players.size();
     stages = calc_stages(count);
-    this->setGeometry(10, 30, stages*BUTTON_W, count*BUTTON_H*2-BUTTON_H);
+    setFixedGeometry(this, 10, 30, stages*BUTTON_W, BUTTON_H*(count*2-1));
 
     // creating buttons
     buttons = vector<vector<QPushButton*>>(stages);
-    for(int stage=0, c=count; stage<stages; ++stage){
+    for(int stage=0, c=count; stage<stages; ++stage, c=(c+1)/2){
         buttons[stage] = vector<QPushButton*>(c);
         for(int i=0; i<c; ++i){
             buttons[stage][i] = new QPushButton(this);
             buttons.at(stage).at(i)->hide();
         }
-        c = (c+1)/2;
     }
     // buttons geometry
     for(size_t i=0; i<buttons[0].size(); ++i){

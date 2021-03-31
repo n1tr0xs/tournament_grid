@@ -7,6 +7,7 @@
 #include <QStringList>
 #include <vector>
 #include <random>
+#include <ctime>
 using std::vector;
 
 QT_BEGIN_NAMESPACE
@@ -28,6 +29,7 @@ private:
     vector<vector<QFrame*>> vLines;
     vector<vector<QFrame*>> hLines;
     // funcs
+    void createInput();
     void createGrid();
     void on_btn_click(QTextEdit* edit, QPushButton* btn);
     QFrame* createVLine(QWidget* parent, int ax, int ay, int s);
