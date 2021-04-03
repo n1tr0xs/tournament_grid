@@ -7,6 +7,7 @@
 #include <QStringList>
 #include <vector>
 #include <random>
+#include "funcs.h"
 #include <ctime>
 using std::vector;
 
@@ -29,9 +30,10 @@ private:
     vector<vector<QFrame*>> vLines;
     vector<vector<QFrame*>> hLines;
     // funcs
+    void on_btn_click(QTextEdit* edit, QPushButton* btn);
     void createInput();
     void createGrid();
-    void on_btn_click(QTextEdit* edit, QPushButton* btn);
+    void createButtons(QWidget* parent, int count_on_1st_stage);
     QFrame* createVLine(QWidget* parent, int ax, int ay, int s);
     QFrame* createHLine(QWidget* parent, int ax, int ay, int s);
 };

@@ -44,15 +44,7 @@ void MainWindow::createGrid(){
     stages = std::ceil(log2(count)) + 1;
     setFixedGeometry(this, 10, 30, stages*BUTTON_W, BUTTON_H*(count*2-1));
 
-    // creating buttons
-    buttons = vector<vector<QPushButton*>>(stages);
-    for(int stage=0, c=count; stage<stages; ++stage, c=(c+1)/2){
-        buttons[stage] = vector<QPushButton*>(c);
-        for(int i=0; i<c; ++i){
-            buttons[stage][i] = new QPushButton(this);
-            buttons[stage][i]->hide();
-        }
-    }
+    createButtons(this, count);
     // buttons geometry
     for(size_t i=0; i<buttons[0].size(); ++i){
         buttons[0][i]->setGeometry(0, BUTTON_H*i*2, BUTTON_W, BUTTON_H);
@@ -150,6 +142,18 @@ void MainWindow::createGrid(){
     }
 }
 
+void MainWindow::createButtons(QWidget* parent, int c){
+    clean_mem(buttons);
+    buttons = vector<vector<QPushButton*>>(stages);
+    for(int stage=0; stage<stages; ++stage, c=(c+1)/2){
+        buttons[stage] = vector<QPushButton*>(c);
+        for(int i=0; i<c; ++i){
+            buttons[stage][i] = new QPushButton(parent);
+            buttons[stage][i]->hide();
+        }
+    }
+}
+
 QFrame* MainWindow::createVLine(QWidget *parent, int ax, int ay, int s){
     QFrame *line = new QFrame(parent);
     line->setGeometry(ax, ay, 10, s);
@@ -168,13 +172,6 @@ QFrame* MainWindow::createHLine(QWidget *parent, int ax, int ay, int s){
     line->setMidLineWidth(5);
     line->setFrameShape(QFrame::HLine);
     return line;
-}
-
-template<class T>
-void clean_mem(vector<vector<T*>> vec){
-    for(size_t i=0; i<vec.size(); ++i)
-        for(size_t j=0; j<vec[i].size(); ++j)
-            delete vec[i][j];
 }
 
 MainWindow::~MainWindow(){
