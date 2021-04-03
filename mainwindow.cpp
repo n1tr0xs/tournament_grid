@@ -7,16 +7,6 @@ void setFixedGeometry(QWidget* w, int ax, int ay, int aw, int ah){
     w->setMaximumSize(aw, ah);
 }
 
-int calc_stages(int players){
-    int stages = 1;
-    int p = 1;
-    while(p<players){
-        ++stages;
-        p *= 2;
-    }
-    return stages;
-}
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow){
     ui->setupUi(this);
     this->setWindowTitle(QString("Tournament grid"));
@@ -33,25 +23,6 @@ void MainWindow::createInput(){
     connect(btn, &QPushButton::clicked, this, [=](){ on_btn_click(edit, btn);});
     edit->show();
     btn->show();
-
-//    edit->setText(QString("1"));
-//    edit->setText(QString("1\n2"));
-//    edit->setText(QString("1\n2\n3"));
-//    edit->setText(QString("1\n2\n3\n4"));
-//    edit->setText(QString("1\n2\n3\n4\n5"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16"));
-//    edit->setText(QString("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17"));
-//    btn->click();
 }
 
 void MainWindow::on_btn_click(QTextEdit* edit, QPushButton* btn){
@@ -70,7 +41,7 @@ void MainWindow::on_btn_click(QTextEdit* edit, QPushButton* btn){
 void MainWindow::createGrid(){
     std::random_shuffle(players.begin(), players.end());
     const int count = players.size();
-    stages = calc_stages(count);
+    stages = std::ceil(log2(count)) + 1;
     setFixedGeometry(this, 10, 30, stages*BUTTON_W, BUTTON_H*(count*2-1));
 
     // creating buttons
@@ -79,7 +50,7 @@ void MainWindow::createGrid(){
         buttons[stage] = vector<QPushButton*>(c);
         for(int i=0; i<c; ++i){
             buttons[stage][i] = new QPushButton(this);
-            buttons.at(stage).at(i)->hide();
+            buttons[stage][i]->hide();
         }
     }
     // buttons geometry
