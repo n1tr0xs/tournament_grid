@@ -5,11 +5,10 @@
 #include <QTextEdit>
 #include <QPushButton>
 #include <QStringList>
-#include <vector>
+#include <QVector>
 #include <random>
-#include "funcs.h"
 #include <ctime>
-using std::vector;
+#include "funcs.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -26,14 +25,16 @@ private:
     QStringList players;
     int stages;
     int BUTTON_H=20, BUTTON_W=110;
-    vector<vector<QPushButton*>> buttons;
-    vector<vector<QFrame*>> vLines;
-    vector<vector<QFrame*>> hLines;
+    QVector<QVector<QPushButton*>> buttons;
+    QVector<QVector<QFrame*>> vLines;
+    QVector<QVector<QFrame*>> hLines;
     // funcs
     void on_btn_click(QTextEdit* edit, QPushButton* btn);
     void createInput();
     void createGrid();
-    void createButtons(QWidget* parent, int count_on_1st_stage);
+    void createButtons(QWidget* parent);
+    void createVLines(QWidget* parent);
+    void createHLines(QWidget* parent);
     QFrame* createVLine(QWidget* parent, int ax, int ay, int s);
     QFrame* createHLine(QWidget* parent, int ax, int ay, int s);
 };

@@ -27,62 +27,49 @@ void MainWindow::createInput(){
 
 void MainWindow::on_btn_click(QTextEdit* edit, QPushButton* btn){
     players = edit->toPlainText().split('\n');
+    if(players.front() == "")
+        players.pop_front();
     if(players.back() == "")
         players.pop_back();
     if(players.size() < 2)
         return;
-    if(players.front() == "" && players.size() == 1)
-        return;
+    std::srand(time(NULL));
+    std::random_shuffle(players.begin(), players.end());
     delete edit;
     delete btn;
     createGrid();
 }
 
 void MainWindow::createGrid(){
-    std::random_shuffle(players.begin(), players.end());
-    const int count = players.size();
+    int count = players.size();
     stages = std::ceil(log2(count)) + 1;
     setFixedGeometry(this, 10, 30, stages*BUTTON_W, BUTTON_H*(count*2-1));
 
-    createButtons(this, count);
-    // buttons geometry
-    for(size_t i=0; i<buttons[0].size(); ++i){
-        buttons[0][i]->setGeometry(0, BUTTON_H*i*2, BUTTON_W, BUTTON_H);
-        buttons[0][i]->show();
-    }
-    for(size_t i=1; i<buttons.size(); ++i){
-        for(size_t j=0; j<buttons[i].size(); ++j){
-            auto btn = buttons[i][j];
-            auto prev = buttons[i-1][j*2];
-            if(buttons[i-1].size()%2 && j==buttons[i].size()-1)
-                btn->setGeometry(prev->x()+BUTTON_W, prev->y(), BUTTON_W, BUTTON_H);
-            else
-                btn->setGeometry(prev->x()+BUTTON_W, prev->y() + (buttons[i-1][j*2+1]->y() - prev->y())/2, BUTTON_W, BUTTON_H);
-            buttons[i][j]->show();
+    createButtons(this);
+    createVLines(this);
+    createHLines(this);
+}
+
+void MainWindow::createButtons(QWidget* parent){
+    //creating
+    clean_mem(buttons);
+    buttons = QVector<QVector<QPushButton*>>(stages);
+    for(int stage=0, c=players.size(); stage<stages; ++stage, c=(c+1)/2){
+        buttons[stage] = QVector<QPushButton*>(c);
+        for(int i=0; i<c; ++i){
+            buttons[stage][i] = new QPushButton(parent);
         }
     }
 
-    // setting players names on 1st stage
-    for(size_t i=0; i<buttons[0].size(); ++i)
-        buttons[0][i]->setText(players[i]);
-    // setting "autowinner" if odd number of players
-    if(buttons[0].size()%2){
-        int stage = 0;
-        auto btn = buttons[0].back();
-        while(buttons[stage].size()%2)
-            buttons[++stage].back()->setText(btn->text());
-    }
-
-    // buttons binds
+    // binding
     for(int stage=0; stage<stages-1; ++stage){
-        for(size_t i=0; i<buttons[stage].size(); ++i){
+        for(int i=0; i<buttons[stage].size(); ++i){
             QPushButton *btn = buttons[stage][i];
             QPushButton *next_btn = buttons[stage+1][i/2];
             connect(btn, &QPushButton::clicked, this, [=](){ next_btn->setText(btn->text());});
         }
     }
 
-    // still button binds
     for(int stage=0; stage<stages-1; ++stage){
         int stg = stage;
         QPushButton *btn = buttons[stage].back();
@@ -105,28 +92,59 @@ void MainWindow::createGrid(){
         stage = stg;
     }
 
-    // creating, placing vertical lines
-    vLines = vector<vector<QFrame*>>(stages);
+    // geometry
+    for(int i=0; i<buttons[0].size(); ++i){
+        buttons[0][i]->setGeometry(0, BUTTON_H*i*2, BUTTON_W, BUTTON_H);
+        buttons[0][i]->show();
+    }
+    for(int i=1; i<buttons.size(); ++i){
+        for(int j=0; j<buttons[i].size(); ++j){
+            auto btn = buttons[i][j];
+            auto prev = buttons[i-1][j*2];
+            if(buttons[i-1].size()%2 && j==buttons[i].size()-1)
+                btn->setGeometry(prev->x()+BUTTON_W, prev->y(), BUTTON_W, BUTTON_H);
+            else
+                btn->setGeometry(prev->x()+BUTTON_W, prev->y() + (buttons[i-1][j*2+1]->y() - prev->y())/2, BUTTON_W, BUTTON_H);
+            btn->show();
+        }
+    }
+
+    // text
+    for(int i=0; i<buttons[0].size(); ++i)
+        buttons[0][i]->setText(players[i]);
+
+    if(buttons[0].size()%2){
+        int stage = 0;
+        auto btn = buttons[0].back();
+        while(buttons[stage].size()%2)
+            buttons[++stage].back()->setText(btn->text());
+    }
+}
+
+void MainWindow::createVLines(QWidget* parent){
+    clean_mem(vLines);
+    vLines = QVector<QVector<QFrame*>>(stages);
     for(int stage=0, c=players.size(); stage<stages-1; ++stage, c = (c+1)/2){
-        vLines[stage] = vector<QFrame*>(c/2);
+        vLines[stage] = QVector<QFrame*>(c/2);
         int ax = buttons[stage][0]->x() + buttons[stage][0]->width()/2 - 5;
-        for(size_t i=0; i<buttons[stage].size()/2; ++i){
+        for(int i=0; i<buttons[stage].size()/2; ++i){
             int ay = buttons[stage][i*2]->y() + buttons[stage][i*2]->height() - 2;
             int s = buttons[stage][i*2+1]->y() - buttons[stage][i*2]->y() - BUTTON_H + 4;
-            QFrame *line = createVLine(this, ax, ay, s);
+            QFrame *line = createVLine(parent, ax, ay, s);
             line->show();
             vLines[stage][i] = line;
         }
     }
+}
 
-    // creating, placing horizontal lines
-    hLines = vector<vector<QFrame*>>(stages);
+void MainWindow::createHLines(QWidget *parent){
+    clean_mem(hLines);
+    hLines = QVector<QVector<QFrame*>>(stages);
     for(int stage=0, c=(players.size()+1)/2; stage<stages-1; ++stage, c = (c+1)/2){
-        hLines[stage] = vector<QFrame*>(c);
+        hLines[stage] = QVector<QFrame*>(c);
         int ax = buttons[stage].front()->x() + BUTTON_W/2 + 3;
         int p = (buttons[stage].size()+1)/2;
-        for(int i=0; i<p; ++i){
-            int ay, s;
+        for(int i=0, ay, s; i<p; ++i){
             if(buttons[stage].size()%2 == 1 && i==p-1){
                 ax += BUTTON_W/2 - 4;
                 ay = buttons[stage].back()->y() + BUTTON_H/2 - 5;
@@ -135,21 +153,9 @@ void MainWindow::createGrid(){
                 ay = buttons[stage][i*2]->y() + (buttons[stage][i*2+1]->y() - buttons[stage][i*2]->y())/2 + 5;
                 s = buttons[stage+1].front()->x() - ax + 1;
             }
-            QFrame *line = createHLine(this, ax, ay, s);
+            QFrame *line = createHLine(parent, ax, ay, s);
             line->show();
             hLines[stage][i] = line;
-        }
-    }
-}
-
-void MainWindow::createButtons(QWidget* parent, int c){
-    clean_mem(buttons);
-    buttons = vector<vector<QPushButton*>>(stages);
-    for(int stage=0; stage<stages; ++stage, c=(c+1)/2){
-        buttons[stage] = vector<QPushButton*>(c);
-        for(int i=0; i<c; ++i){
-            buttons[stage][i] = new QPushButton(parent);
-            buttons[stage][i]->hide();
         }
     }
 }
